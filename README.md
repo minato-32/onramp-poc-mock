@@ -6,8 +6,7 @@ white-label API** (custom UI, no widget/redirect), integrated with a **mock coin
 The user enters a **fiat amount to spend** (USD); Meld returns the token they receive (forward
 quote), delivers **native DOT** to a **per-session ephemeral Asset Hub address**, and the host
 converts it to **coinage** (swap → CASH → People → `topUp()`). The coinage side is a **mock**
-here, modelled on the getsome `tb/coinage-handoff` interface; it swaps to the real `@onramp/*`
-packages once shared.
+here; it swaps to the real host coinage flow when that is wired in.
 
 The spend amount and pay method can be supplied via **query params** for a host-launched flow:
 `?amount=100&method=CARD` (any missing param falls back to its in-app screen).
@@ -37,7 +36,7 @@ cd ../frontend && npm install && npm run dev          # http://localhost:5173
 region → method (bank / card) → spend amount (USD) → quote (forward: spend → receive ≈ token) →
 in-app pay (WebView) → status → **coinage handoff** (ephemeral address → deliver DOT → swap → CASH
 → People → topUp → coinage). A live **activity log** panel traces every API call, step, and result.
-All mock-driven until the Meld key + `@onramp/*` packages are wired.
+All mock-driven until the Meld key and the real coinage flow are wired.
 
 ## Notes
 - **No widget / no runtime redirect URL** — Meld is used strictly via its API.

@@ -35,7 +35,7 @@ export interface SessionResult {
   mock: boolean;
 }
 
-// --- Coinage handoff (mock; models getsome tb/coinage-handoff) ---
+// --- Coinage handoff (mock) ---
 export type CoinagePhase =
   | 'idle'
   | 'awaiting-deposit' // ephemeral address issued, waiting for native DOT

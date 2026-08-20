@@ -11,6 +11,7 @@ function summarize(path: string, d: any): string | undefined {
     if (d.unavailable) return 'unavailable (no provider)';
     return `charge=${d.charge} ${d.fiat} · via ${d.serviceProvider} · receive≈${d.receiveAmount}`;
   }
+  if (path.includes('/fx')) return d.rate != null ? `1 ${d.from} = ${Number(d.rate).toFixed(4)} ${d.to}` : undefined;
   if (path.includes('/session')) return d.sessionId ? `sessionId=${d.sessionId}` : undefined;
   if (path.includes('/status/')) return d.status ? `status=${d.status}` : undefined;
   if (path.includes('/coinage')) return d.id ? `phase=${d.phase}` : undefined;
@@ -49,6 +50,8 @@ export const onrampApi = {
   session: (body: { quote: QuoteResult; walletAddress: string }) =>
     j<SessionResult>('/api/onramp/session', post(body)),
   status: (id: string) => j<{ status: string; mock?: boolean }>(`/api/onramp/status/${id}`),
+  fx: (to: string, from = 'USD') =>
+    j<{ from: string; to: string; rate: number; asOf: number }>(`/api/onramp/fx?from=${from}&to=${to}`),
 };
 
 export const coinageApi = {

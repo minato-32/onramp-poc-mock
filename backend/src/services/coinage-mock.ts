@@ -2,10 +2,9 @@ import { config } from '../config.js';
 import type { CoinageSession, CoinagePhase } from '../types.js';
 
 /**
- * Mock coinage handoff — models the getsome `tb/coinage-handoff` flow:
- * a per-session ephemeral Asset Hub address receives native DOT, which is swapped
- * to CASH, XCM'd to People chain, and topped up into coinage. Swaps to the real
- * `@onramp/*` packages once shared.
+ * Mock coinage handoff: a per-session ephemeral Asset Hub address receives native
+ * DOT, which is swapped to CASH, XCM'd to People chain, and topped up into coinage.
+ * Swaps to the real host coinage flow when that is wired in.
  */
 
 type Internal = CoinageSession & { advanceAt: number; delivering: boolean };

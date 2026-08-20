@@ -26,6 +26,35 @@ onrampRouter.get('/methods', async (req, res) => {
   }
 });
 
+// --- live FX (no-key) — informational: show the region's local-currency equivalent ---
+let fxCache: { at: number; rates: Record<string, number> } | null = null;
+const FX_TTL = 10 * 60 * 1000; // 10 min
+
+async function usdRates(): Promise<Record<string, number>> {
+  if (fxCache && Date.now() - fxCache.at < FX_TTL) return fxCache.rates;
+  const r = await fetch('https://open.er-api.com/v6/latest/USD');
+  const d: any = await r.json();
+  if (d?.result !== 'success' || !d.rates) throw new Error('fx source failed');
+  fxCache = { at: Date.now(), rates: d.rates };
+  return d.rates;
+}
+
+onrampRouter.get('/fx', async (req, res) => {
+  const from = String(req.query.from ?? 'USD').toUpperCase();
+  const to = String(req.query.to ?? '').toUpperCase();
+  if (!to) return res.status(400).json({ error: 'to required' });
+  if (to === from) return res.json({ from, to, rate: 1, asOf: Date.now() });
+  try {
+    const rates = await usdRates();
+    const base = rates[from];
+    const quote = rates[to];
+    if (!base || !quote) return res.status(404).json({ error: `no rate for ${from}->${to}` });
+    res.json({ from, to, rate: quote / base, asOf: fxCache?.at ?? Date.now() });
+  } catch (e: any) {
+    res.status(502).json({ error: e.message });
+  }
+});
+
 onrampRouter.get('/routes', async (req, res) => {
   const { country, fiat, token } = req.query as Record<string, string>;
   if (!country || !fiat || !token) return res.status(400).json({ error: 'country, fiat, token required' });
