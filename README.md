@@ -13,11 +13,11 @@ The spend amount and pay method can be supplied via **query params** for a host-
 `?amount=100&method=CARD` (any missing param falls back to its in-app screen).
 
 ## Runs fully locally — with or without a Meld key
-- **No key (default):** a built-in **mock mode** returns realistic quotes / sessions / statuses so
-  the whole flow is demoable end-to-end with zero external dependencies.
+- **No key (default):** a built-in **mock mode** returns quotes / sessions / statuses so the whole
+  flow runs end-to-end with zero external dependencies.
 - **With a sandbox key:** set `MELD_API_KEY` and it calls the real Meld API.
 
-## Layout (industry structure)
+## Layout
 ```
 onramp-poc-mock/
 ├── backend/   Node + Express — Meld service (real + mock), deposit-math, coinage mock
