@@ -8,8 +8,8 @@ quote), delivers **native DOT** to a **per-session ephemeral Asset Hub address**
 converts it to **coinage** (swap → CASH → People → `topUp()`). The coinage side is a **mock**
 here; it swaps to the real host coinage flow when that is wired in.
 
-The spend amount and pay method can be supplied via **query params** for a host-launched flow:
-`?amount=100&method=CARD` (any missing param falls back to its in-app screen).
+The spend amount and pay method can be supplied via **query params** for a host-launched flow —
+see [Query params](#query-params) below.
 
 ## Runs fully locally — with or without a Meld key
 - **No key (default):** a built-in **mock mode** returns quotes / sessions / statuses so the whole
@@ -30,6 +30,25 @@ onramp-poc-mock/
 cd backend  && npm install && cp .env.example .env   # MELD_API_KEY optional (mock mode without it)
 npm run dev                                           # http://localhost:8787
 cd ../frontend && npm install && npm run dev          # http://localhost:5173
+```
+
+## Query params
+Prefill / pre-lock steps by adding params to the URL. Anything you omit just shows its normal
+in-app screen, so a plain `http://localhost:5173/` still runs the full manual flow.
+
+| Param    | Allowed values                    | Effect                                                        |
+|----------|-----------------------------------|--------------------------------------------------------------|
+| `amount` | any positive number (USD)         | Pre-fills the spend amount and **locks** the input           |
+| `method` | `CARD` or `BANK_TRANSFER`         | Pre-selects the pay method and **skips** the method screen    |
+
+Case-insensitive; an invalid value is ignored and the screen shows instead.
+
+**Copy-paste examples** (change the values):
+```
+http://localhost:5173/?amount=100&method=CARD
+http://localhost:5173/?amount=250&method=BANK_TRANSFER
+http://localhost:5173/?amount=50
+http://localhost:5173/?method=CARD
 ```
 
 ## Flow
