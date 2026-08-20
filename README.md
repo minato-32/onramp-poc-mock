@@ -57,6 +57,52 @@ in-app pay (WebView) → status → **coinage handoff** (ephemeral address → d
 → People → topUp → coinage). A live **activity log** panel traces every API call, step, and result.
 All mock-driven until the Meld key and the real coinage flow are wired.
 
+## APIs
+
+### External services
+Three third-party services are called. In **mock mode** only the keyless ones are hit — Meld's
+authenticated quote/session/status are served locally instead.
+
+**Meld — public discovery** · base `https://api.meld.io` · no key · called in **both** modes
+| Method & path | Purpose |
+|---|---|
+| `GET /network-partner/supported/countries?category=CRYPTO_ONRAMP` | Regions / countries |
+| `GET /network-partner/supported/payment-methods?category=CRYPTO_ONRAMP&country=XX` | Payment-method catalog |
+| `GET /network-partner/supported/routes/CRYPTO_ONRAMP/{country}/{fiat}/{token}` | Route availability |
+
+**Meld — authenticated** · base `https://api-sb.meld.io` (sandbox) / `https://api.meld.io` (prod) ·
+needs `MELD_API_KEY` (`Authorization: BASIC <key>` + `Meld-Version`) · **live mode only**
+| Method & path | Purpose |
+|---|---|
+| `POST /payments/crypto/quote` | Forward quote (spend → receive) |
+| `POST /crypto/session/widget` | Create BUY session (returns widget URL) |
+| `GET /payments/transactions/{id}` | Payment status |
+
+**FX rates** · `GET https://open.er-api.com/v6/latest/USD` · no key · always live · 10-min cache
+Live USD → local-currency rates for the amount-step conversion panel.
+
+### Backend API (frontend → our Express server)
+Mounted at `/api/onramp` and `/api/coinage`. The Meld key never leaves the backend.
+
+`/api/onramp`
+| Method & path | Purpose |
+|---|---|
+| `GET /health` | Mode (mock/live) + Meld env |
+| `GET /regions` | Countries (proxies Meld public; offline fallback) |
+| `GET /methods?country=XX` | Payment methods (proxies Meld public) |
+| `GET /routes?country=&fiat=&token=` | Parsed route availability |
+| `GET /fx?from=USD&to=XXX` | Live FX rate |
+| `POST /quote` | Forward quote (real Meld, else mock) |
+| `POST /session` | Create pay session (real Meld, else mock) |
+| `GET /status/:id` | Payment status (real Meld, else mock) |
+
+`/api/coinage` — mock coinage handoff, in-memory
+| Method & path | Purpose |
+|---|---|
+| `POST /session` | Open coinage session → mints ephemeral Asset Hub address |
+| `POST /deliver/:id` | Simulate the native-DOT deposit landing → start advancing |
+| `GET /:id` | Poll the handoff phase (awaiting-deposit → … → done) |
+
 ## Notes
 - **No widget / no runtime redirect URL** — Meld is used strictly via its API.
 - Fiat is fixed to **USD** in this PoC (no per-country fiat mapping yet).
